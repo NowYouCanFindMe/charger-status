@@ -1,0 +1,51 @@
+/* Removed Tailwind directives because Tailwind is not configured or recognized by the build process */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body {
+  margin: 10x;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: rgba(83, 77, 77, 0.336);
+  padding: 10px;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+/* ...existing code... */
+.container {
+  background: #f7f4f4;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 24px;
+  margin: 16px 0;
+  transition: box-shadow 0.2s;
+  border: 1px solid #eaeaea;
+}
+
+.container:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+/* ...existing code... */
+
+.card-status {
+  background: #f6f8fa;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  padding: 18px 20px;
+  margin: 12px 0;
+  border: 1px solid #e3e7ed;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow 0.2s;
+}
+
+.card-status:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
