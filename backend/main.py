@@ -22,7 +22,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=origins,        # or ["*"] to allow all
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -162,3 +162,15 @@ async def get_all_status():
                 results.append({"name": name, "serial": serial, "error": str(e)})
 
     return results
+
+@app.delete("/mappings/{name}")
+def delete_mapping(name: str):
+    conn = get_conn()
+    result = conn.execute("DELETE FROM charger_mappings WHERE name=?", (name,))
+    conn.commit()
+    conn.close()
+
+    if result.rowcount == 0:
+        raise HTTPException(status_code=404, detail="Mapping not found")
+
+    return {"status": "deleted", "name": name}
