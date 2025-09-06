@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 
+const URL = "https://charger-status-backend.onrender.com"
+
 type ChargerStatus = {
   name: string;
   serial: string;
@@ -29,33 +31,6 @@ const Title = styled.h1`
   font-weight: 700;
   margin-bottom: 1rem;
   color: #1f2937;
-`;
-
-const Controls = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-bottom: 1rem;
-`;
-
-const CheckboxLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.875rem;
-`;
-
-const Button = styled.button<{ variant?: "green" | "red" }>`
-  padding: 0.25rem 0.75rem;
-  font-size: 0.875rem;
-  color: white;
-  border-radius: 0.375rem;
-  background: ${(p) => (p.variant === "red" ? "#dc2626" : "#16a34a")};
-  cursor: pointer;
-  transition: background 0.2s;
-  &:hover {
-    background: ${(p) => (p.variant === "red" ? "#b91c1c" : "#15803d")};
-  }
 `;
 
 const Table = styled.table`
@@ -92,6 +67,20 @@ const Td = styled.td<{ connector?: boolean; available?: boolean }>`
       : "#111827"};
 `;
 
+const RemoveBtn = styled.button`
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background 0.2s;
+  &:hover {
+    background: #b91c1c;
+  }
+`;
+
 export default function ChargerTable() {
   const [statuses, setStatuses] = useState<ChargerStatus[]>([]);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(
@@ -99,61 +88,45 @@ export default function ChargerTable() {
   );
 
   useEffect(() => {
-    const fetchStatuses = async () => {
-      try {
-        const res = await fetch("http://localhost:8000/all");
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setStatuses(data);
-        } else {
-          console.error("Unexpected response:", data);
-          setStatuses([]);
-        }
-      } catch (err) {
-        console.error("Error fetching statuses:", err);
-        setStatuses([]);
-      }
-    };
-
     fetchStatuses();
     const interval = setInterval(fetchStatuses, 5_000);
     return () => clearInterval(interval);
   }, []);
 
-  const toggleColumn = (key: string) => {
-    setVisibleColumns((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
-    );
+  const fetchStatuses = async () => {
+    try {
+      const res = await fetch(URL +"/all");
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setStatuses(data);
+      } else {
+        console.error("Unexpected response:", data);
+        setStatuses([]);
+      }
+    } catch (err) {
+      console.error("Error fetching statuses:", err);
+      setStatuses([]);
+    }
   };
 
-  const showAll = () => setVisibleColumns(allColumns.map((c) => c.key));
-  const hideAll = () => setVisibleColumns([]);
+  const handleDelete = async (name: string) => {
+    if (!window.confirm(`Remove charger "${name}"?`)) return;
+    try {
+      const res = await fetch(URL+`/mappings/${name}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete");
+      // ✅ Remove from state so it disappears from table immediately
+      setStatuses((prev) => prev.filter((s) => s.name !== name));
+    } catch (err) {
+      console.error("Error deleting:", err);
+    }
+  };
 
   return (
     <Wrapper>
       <Title>All Chargers Status</Title>
 
-      {/* Column toggle checkboxes */}
-      <Controls>
-        {allColumns.map((col) => (
-          <CheckboxLabel key={col.key}>
-            <input
-              type="checkbox"
-              checked={visibleColumns.includes(col.key)}
-              onChange={() => toggleColumn(col.key)}
-            />
-            {col.label}
-          </CheckboxLabel>
-        ))}
-        <Button onClick={showAll} variant="green">
-          Show All
-        </Button>
-        <Button onClick={hideAll} variant="red">
-          Hide All
-        </Button>
-      </Controls>
-
-      {/* Table */}
       <Table>
         <thead>
           <tr>
@@ -162,6 +135,7 @@ export default function ChargerTable() {
               .map((col) => (
                 <Th key={col.key}>{col.label}</Th>
               ))}
+            <Th>Actions</Th>
           </tr>
         </thead>
         <tbody>
@@ -190,6 +164,11 @@ export default function ChargerTable() {
 
                   return <Td key={col.key}>{value || "N/A"}</Td>;
                 })}
+              <Td>
+                <RemoveBtn onClick={() => handleDelete(s.name)}>
+                  Remove
+                </RemoveBtn>
+              </Td>
             </Tr>
           ))}
         </tbody>

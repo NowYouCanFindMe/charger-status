@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import ChargerTable from "./components/ChargerTable.tsx";
 
+const URL = "https://charger-status-backend.onrender.com"
+
+
 type Mapping = {
   name: string;
   serial: string;
@@ -144,7 +147,7 @@ export default function ChargerDashboard() {
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:8000/mappings")
+    fetch(URL + "/mappings")
       .then((res) => res.json())
       .then(setMappings);
   }, []);
@@ -153,7 +156,7 @@ export default function ChargerDashboard() {
     if (!selected) return;
 
     const fetchStatus = () =>
-      fetch(`http://localhost:8000/status/${selected}`)
+      fetch(URL + `/status/${selected}`)
         .then((res) => res.json())
         .then(setStatus);
 
@@ -168,7 +171,7 @@ export default function ChargerDashboard() {
     if (!newName || !newSerial) return;
 
     try {
-      const res = await fetch("http://localhost:8000/mappings", {
+      const res = await fetch(URL + "/mappings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newName, serial: newSerial }),
