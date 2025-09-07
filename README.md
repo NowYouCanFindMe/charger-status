@@ -62,7 +62,6 @@ npm start
 table - charger-mappings
 
 ```
-  conn.execute("""
 CREATE TABLE IF NOT EXISTS charger_mappings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT UNIQUE NOT NULL,
