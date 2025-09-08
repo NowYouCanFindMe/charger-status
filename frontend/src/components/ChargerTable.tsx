@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 
-const URL = "https://charger-status-backend.onrender.com";
+const URL = "https://charger-status-backend.onrender.com"
+
 
 type ChargerStatus = {
   name: string;
@@ -11,6 +12,7 @@ type ChargerStatus = {
 };
 
 const allColumns = [
+  { key: "health", label: "Health" },
   { key: "name", label: "Name" },
   { key: "serial", label: "Serial" },
   { key: "UpdatedAt", label: "UpdatedAt" },
@@ -19,7 +21,7 @@ const allColumns = [
   { key: "Firmware Code", label: "Firmware Code" },
   { key: "Connector #1", label: "Connector #1" },
   { key: "Connector #2", label: "Connector #2" },
-  { key: "actions", label: "Actions" }, // ✅ delete button column
+  { key: "actions", label: "Actions" },
 ];
 
 /* -------- Styled Components -------- */
@@ -105,6 +107,21 @@ const RemoveBtn = styled.button`
   }
 `;
 
+/* Health Indicator */
+const HealthIndicator = styled.div<{ status: string }>`
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin: auto;
+
+  background: ${(p) =>
+    p.status.toLowerCase() === "connected" || p.status.toLowerCase() === "connected"
+      ? "#16a34a" // green
+      : p.status.toLowerCase() === "disconnected"
+      ? "#dc2626" // red
+      : "#9ca3af"}; // grey
+`;
+
 /* -------- Modal Styles -------- */
 const ModalOverlay = styled.div`
   position: fixed;
@@ -155,7 +172,7 @@ const ConfirmBtn = styled.button<{ variant?: "cancel" | "delete" }>`
 export default function ChargerTable() {
   const [statuses, setStatuses] = useState<ChargerStatus[]>([]);
   const [visibleColumns, setVisibleColumns] = useState<string[]>(
-    allColumns.map((c) => c.key) // all visible by default
+    allColumns.map((c) => c.key)
   );
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
@@ -172,11 +189,9 @@ export default function ChargerTable() {
       if (Array.isArray(data)) {
         setStatuses(data);
       } else {
-        console.error("Unexpected response:", data);
         setStatuses([]);
       }
-    } catch (err) {
-      console.error("Error fetching statuses:", err);
+    } catch {
       setStatuses([]);
     }
   };
@@ -236,6 +251,15 @@ export default function ChargerTable() {
                 {allColumns
                   .filter((col) => visibleColumns.includes(col.key))
                   .map((col) => {
+                    if (col.key === "health") {
+                      const health = s.data?.Health || "unknown";
+                      return (
+                        <Td key="health">
+                          <HealthIndicator status={health} title={health} />
+                        </Td>
+                      );
+                    }
+
                     if (col.key === "actions") {
                       return (
                         <Td key="actions">
@@ -270,7 +294,6 @@ export default function ChargerTable() {
           </tbody>
         </Table>
       </ScrollContainer>
-
       {/* Confirm Delete Modal */}
       {deleteTarget && (
         <ModalOverlay>
