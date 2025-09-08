@@ -16,8 +16,6 @@ origins = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
     "https://charger-status.onrender.com"
-
-
 ]
 
 app.add_middleware(
@@ -106,25 +104,26 @@ async def get_status(name: str):
 
     # Extract lines inside <body>
     body_text = soup.body.get_text(separator="\n", strip=True)
+    print(body_text)
 
     parsed = {}
     for line in body_text.splitlines():
-        if ":" in line:
+        if ":" in line and "(" not in line:
             key, value = line.split(":", 1)
             parsed[key.strip()] = value.strip()
+        if ":" in line and "(" in line:
+            key = "ID"
+            after_colon = line.split(":", 1)[1].strip()
+            value = after_colon.split("(", 1)[0].strip()
+            parsed[key.strip()] = value.strip()
+
+        elif line.strip() in ["CONNECTED", "DISCONNECTED", "AVAILABLE", "UNAVAILABLE"]:
+            parsed["Health"] = line.strip()
 
     return {
         "serial": serial,
         "data": parsed
     }
-
-from bs4 import BeautifulSoup
-import httpx
-
-# @app.get("/all")
-# async def get_all_status():
-#     return [{"name": "test", "serial": "123", "data": {"UpdatedAt": "demo"}}]
-
 
 @app.get("/all")
 async def get_all_status():
@@ -144,9 +143,17 @@ async def get_all_status():
                     body_text = soup.body.get_text(separator="\n", strip=True)
                     parsed = {}
                     for line in body_text.splitlines():
-                        if ":" in line:
+                        if ":" in line and "(" not in line:
                             key, value = line.split(":", 1)
                             parsed[key.strip()] = value.strip()
+                        if ":" in line and "(" in line:
+                            key = "ID"
+                            after_colon = line.split(":", 1)[1].strip()
+                            value = after_colon.split("(", 1)[0].strip()
+                            parsed[key.strip()] = value.strip()
+
+                        elif line.strip() in ["CONNECTED", "DISCONNECTED", "AVAILABLE", "UNAVAILABLE"]:
+                            parsed["Health"] = line.strip()
                     results.append({
                         "name": name,
                         "serial": serial,

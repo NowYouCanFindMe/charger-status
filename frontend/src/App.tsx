@@ -137,7 +137,6 @@ const Input = styled.input`
   margin-bottom: 0.5rem;
 `;
 
-
 export default function ChargerDashboard() {
   const [mappings, setMappings] = useState<Mapping[]>([]);
   const [selected, setSelected] = useState<string>("");
@@ -166,6 +165,22 @@ export default function ChargerDashboard() {
     return () => clearInterval(interval);
   }, [selected]);
 
+  useEffect(() => {
+    fetchMappings(); // initial load
+    const interval = setInterval(fetchMappings, 1_000);
+    return () => clearInterval(interval); // c
+  }, []);
+
+  const fetchMappings = async () => {
+    try {
+      const res = await fetch(URL + "/mappings");
+      const data = await res.json();
+      setMappings(data);
+    } catch (err) {
+      console.error("Error fetching mappings:", err);
+    }
+  };
+
   const handleAddCharger = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName || !newSerial) return;
@@ -183,11 +198,11 @@ export default function ChargerDashboard() {
       setNewName("");
       setNewSerial("");
       setShowForm(false); // auto-hide form after adding
+      fetchMappings();
     } catch (err) {
       console.error("Error adding charger:", err);
     }
   };
-
 
   return (
     <Container>
